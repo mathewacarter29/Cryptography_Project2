@@ -1,108 +1,172 @@
+import java.util.Arrays;
+import java.util.Collections;
 
-public class Driver {
+public class Project2Solver {
 
-	public static void main(String[] args) {
+	public static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		String code = "XCIUIHTVOQVRLHJEYJXAVICEJFWXRVRUAAEPVPNEQLFZGFQEBXOIUXGIVJXVGLBRBXYIDB"
-				+ "FZVKCSGHNITYJBXTSWXZHWZAYSEPINIIZWBRMITIFMQJRKLKASRIMIJPICEMIGGEIINWUT"
-				+ "PZWVIFFEDRJXJXEHTISVNGOWRRVLIMZZGWLHZWZKFXHDRRASRXCEKKAOINYJIJLWJPVGGG"
-				+ "XMSCSNXVVGTIKLXJXYIAKHVXREKTVZWLPLEERIEJGKGZQVRLBWNSDILBQZWLRSUPZXFVWV"
-				+ "SQIIXZXGJRKIFMSAICIUMVJRZGUHQHYEMUTXDSEWXKSHXYILXGCRFPGZCKVFZAWIMIMIFB"
-				+ "RMIJTGGWZXFEUHYMXFVVXVJVUYDREPXYSJBDZHNEJKEIXZWKNIYFPEXXHZVRPBNHBIWSJX"
-				+ "BVQGPWFEICTSEFYIMTELBSIWJIJOMXIJRGPIIGICHMGZVKEAGGJQDYFBGVXZSFLFTHVJSN"
-				+ "POAZXZMLZOVCFXGZWJEJRXJHVGJRTOXYIUHQHYEMUTXDSEWKHPZPPMFMLZLRRVLSAXYIWG"
-				+ "HPWVVLAMNEGTDBINFFXZPLZRKLWWEOEZWAGQJXZSFHZZVVPWVXMSEMUGIOAFVCLSMEKVWL"
-				+ "XJRRRWEIXXISFBGYIMMUXMAXYIUHQHYEMUTXDSEWHKSQMUIJBWNIIZWWADXYEOTVMEEXKX"
-				+ "IFMEKLASNITSEFYIMTELBSIWKLWIVJZZHWKGVRESLIVJZZHWMLZHRXSUIXELWWBXCEJHWL"
-				+ "MBRVHLAIOITLFHPJKPWMVLOLRXAMGVRESLUIVGTIKLIYFPEFRXCMIHHTVOCNIVHRJXYENX"
-				+ "EICJMDOIMFLPDXXNEEHLAIYMJGMLWDSEWOBXCMEXZXISITYLBZZFIEFVLVVVWLBPGSEKGB"
-				+ "RBAYMDXXCIIIZTWISKCWMFZIEEVXGDWZSFPLZXYIJMSNIVODXKDWCELBSIAVQMLXRSIOOB"
-				+ "XCGFRYKINWZRVNWOVPEUTHZQZGKIVDZRGQZVJYGWSGHJXYIJLXJGIEXMEIEGTJHEXLKLSM"
-				+ "EYHIIKLINECPGYXCIDYDMMKPVGGFTZXZRYVSIGVVFLXCEKLSOIWIVRLAIASTYKHJNSDYUA"
-				+ "HZFRXWUYOAVGSGEGPRKJXIOLRXOXADPCRWXHJRXSAGKCSEIKMEIHZRXHVHIUTMUPDGUITT"
-				+ "XZESSMMLJASIKMXJTISLXGOPZFWKXTEEHKXGPVZXQBRWSKLGNVGENWSGHJYIXWVLISCSYR";
-		/**
-		 * "DBMOKWWODJPAOPEPHGQAHWVUJNXDZA"+
-		 * "IAQMRPNEMHGPERZOVKRVLWUGAEOPXE"+
-		 * "HMXDVBXDDVKOYQHJJBLWKXIJDVUQDB"+
-		 * "IPCMAWTBLATKSIZJEYFBSIZBSZVG";
-		 * "DBMOKWWODJPAOPEPHGQAHWVUJNXDZAIAQMRPNEMHGPERZOVKRVLWUGAEOPXEHMXDVBXDDVKOYQHJJBLWKXIJDVUQDBIPCMAWTBLATKSIZJEYFBSIZBSZVG";
-		 **/
-		Project2Solver solver = new Project2Solver(code);
+	private String code;
 
-		// Part 1
-		// Step 1: Split the cipher into 7 strings
-		int numSplits = 7;
-		String[] substrings = solver.split(numSplits);
-		solver.printSubstrings(substrings);
-		System.out.println();
+	/**
+	 * Constructor for the Solver - initializes a "code" field variable representing
+	 * what needs to be decrypted
+	 * 
+	 * @param code Code to be decrypted
+	 */
+	public Project2Solver(String code) {
+		this.code = code;
+	}
 
-		// Step 2: Calculate the index of coincidence for each substring
+	/**
+	 * This method breaks the code into (keyLength) separate strings and returns
+	 * an array of these strings
+	 * 
+	 * @param keyLength The guess for the length of the key
+	 * @return An array containing the split up strings
+	 */
+	public String[] split(int keyLength) {
+		String[] result = new String[keyLength];
+		for (int i = 0; i < this.code.length(); i++) {
+			if (result[i % keyLength] == null) {
+				result[i % keyLength] = "";
+			}
+			result[i % keyLength] += this.code.charAt(i);
+		}
+		return result;
+	}
 
-		// Get frequency arrays for all substrings
-		double[][] freqs = new double[numSplits][];
+	/**
+	 * Splits the code into substrings based on their position and outputs them
+	 * 
+	 * @param keyLength The length of the key word
+	 */
+	public void printSubstrings(String[] substrings) {
 		for (int i = 0; i < substrings.length; i++) {
-			freqs[i] = solver.findFreqs(substrings[i]);
-			double indexOfCoincidence = solver.findIoC(substrings[i], freqs[i]);
-			System.out.println("I(" + (i + 1) + ") = " + indexOfCoincidence);
+			System.out.println("y" + (i + 1) + " = " + substrings[i]);
+		}
+	}
+
+	/**
+	 * Gets an array of the letter frequencies in the string
+	 * Letter Frequency = # of occurances / length of string
+	 * 
+	 * @param str The string we want to find the letter frequencies of
+	 * @return An array of length 26 of letter frequencies (arr[0] = freq of 'A',
+	 *         arr[1] = freq of 'B', etc.)
+	 */
+	public double[] findFreqs(String str) {
+		double[] freqs = new double[26];
+
+		// 1. Get frequencies of all letters in the substring
+		for (int i = 0; i < str.length(); i++) {
+			freqs[ALPHABET.indexOf(str.charAt(i))] += 1;
 		}
 
-		// Step 3: Is this answer correct?
-		/*
-		 * Since all the indexes of coincidence are very close to the value .065, we
-		 * can conclude that key length m = 7 is correct
-		 */
+		return freqs;
+	}
 
-		// Part 2: Find the key
-		String key = "";
-		final double[] alphabet_frequency = { 0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061, 0.070, 0.002,
-				0.008, 0.040, 0.024, 0.067, 0.075, 0.019, 0.001,
-				0.060, 0.063, 0.091, 0.028, 0.010, 0.023, 0.001, 0.020, 0.001 };
+	/**
+	 * Finds the index of coincidence for a given string
+	 * 
+	 * @param str            The string we want the IoC for
+	 * @param frequencyArray The array of letter frequencies for this string
+	 * @return The index of coincidence for the given substring
+	 */
+	public double findIoC(String str, double[] frequencyArray) {
 
-		double[][] table = new double[26][numSplits];
-		// Start with first substring
-		for (int i = 0; i < numSplits; i++) {
-			// Find letter frequencies for this substring
-			double[] substringFreq = solver.findFreqs(substrings[i]);
-			for (int n = 0; n < 26; n++) {
-				double mg = (1 / (double) substrings[i].length())
-						* solver.dotProduct(alphabet_frequency, substringFreq, 1);
-				table[n][i] = mg;
-				substringFreq = solver.shiftLeftByOne(substringFreq);
-			}
-
+		// 2. Sum f(i) * (f(i) - 1)
+		double total = 0;
+		for (int j = 0; j < frequencyArray.length; j++) {
+			total += frequencyArray[j] * (frequencyArray[j] - 1);
 		}
 
-		// Print Formatted Table
-		System.out.printf("%2s|%9s|%9s|%9s|%9s|%9s|%9s|%9s\n", "G", "M1", "M2", "M3", "M4", "M5", "M6", "M7");
-		System.out.println("-".repeat(75));
-
-		for (int r = 0; r < 26; r++)// Cycles through rows
-
-		{
-			System.out.printf("%2d|", r);
-
-			for (int col = 0; col < numSplits; col++) {
-				System.out.printf("%10.3f", table[r][col] * 100);
-
-			}
-			System.out.println(); // Makes a new row
-		}
-		// Dot product the letter frequency array with an array of the known english
-		// alphabet letter frequencies (should be a public static final array)
-
-		// Shift the freq array elements one place to the left to and dot product again
-
-		// Repeat this 26 times - the shift corresponding with the highest dot product
-		// represents the letter in the key word
-
-		// Do this for all 7 substrings
-
-		key = solver.getKey(table);
-		System.out.println("Key is: " + key);
-		// Part 3: Decrypt the given cipher text
-		String plaintext = solver.decryptVigenere(key);
-		System.out.println(plaintext);
+		// 3. IoC = total / n(n-1) where n = length of substring
+		return total / (str.length() * (str.length() - 1));
 
 	}
+
+	/**
+	 * Finds the dot product of two arrays. Must input arrays of equal length.
+	 * 
+	 * @param first  first double array
+	 * @param second second double array
+	 * @return a double value that is the dotPoduct of two arrays
+	 */
+	public double dotProduct(double[] first, double[] second, /** set to 1 if unwanted */
+	double multiplier) {
+
+		double prod = 0;
+		for (int i = 0; i < first.length; i++) {
+			prod += multiplier * first[i] * second[i];
+		}
+		return prod;
+	}
+
+	/**
+	 * Cyclically shifts array left by one (value in index 0 goes to the end of the array)
+	 * @param arr input array
+	 * @return shifted array
+	 */
+	public double[] shiftLeftByOne(double[] arr) {
+		double temp = arr[0];
+		for (int i = 1; i < arr.length; i++) {
+			arr[i - 1] = arr[i];
+		}
+		arr[arr.length - 1] = temp;
+		return arr;
+	}
+
+	/**
+	 * Loop through each column in the table to get max value in each column and the
+	 * corresponding letter in the alphabet
+	 * @param freqTable conatining coincedences index
+	 * @return key based on the max values in the table
+	 */
+	public String getKey(double[][] freqTable) {
+		String key = "";
+		// private <T> T[] getColumn(int address, T[][] from) {
+		for (int col = 0; col < freqTable[0].length; col++) {
+			// (T[]) Arrays.stream(freqTable).map(x -> x[getCol]).toArray(Object[]::new);
+			// }
+			Double[] currColumn = getColumn(freqTable, col);
+			Double max = Collections.max(Arrays.asList(currColumn));
+			int index = Arrays.asList(currColumn).indexOf(max);
+			key += ALPHABET.charAt(index);
+		}
+		return key;
+
+	}
+
+	/**
+	 * Creates a Double[] array for the column indicated by the input
+	 * @param matrix 
+	 * @param col must be within the matrix size
+	 * @return Double[] corresponding to the indicated column
+	 */
+	public Double[] getColumn(double[][] matrix, int col) {
+		Double[] column = new Double[matrix.length];
+		for (int i = 0; i < matrix.length; i++) {
+			column[i] = (Double) matrix[i][col];
+		}
+		return column;
+	}
+
+	/**
+	 * This method decrypts a Vigenere (block) cipher when given the key
+	 * 
+	 * @param key The key for decrypting the code
+	 */
+	public String decryptVigenere(String key) {
+		String result = "";
+		for (int i = 0; i < this.code.length(); i++) {
+			char codeLetter = code.charAt(i);
+			char keyLetter = key.charAt((i % key.length()));
+			int codeIndex = ALPHABET.indexOf(codeLetter);
+			int keyIndex = ALPHABET.indexOf(keyLetter);
+			// System.out.print(ALPHABET.charAt((26 + codeIndex - keyIndex) % 26));
+			result += ALPHABET.charAt((26 + codeIndex - keyIndex) % 26);
+		}
+		return result;
+	}
+
 }
